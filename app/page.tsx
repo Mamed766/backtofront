@@ -1,101 +1,117 @@
-import Image from "next/image";
-
+"use client";
+/* eslint-disable */
+import { useState } from "react";
+import { useRequest, useRequestMutation } from "./_http/axiosFetcher";
+import { CheckStatus } from "./_utils/helper";
+import EditModal from "./edit/[id]/page";
+import { mutate } from "swr";
+import { useRouter } from "next/navigation";
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const { data, isLoading, error } = useRequest("todos", {
+    method: "GET",
+    module: "devApi",
+  });
+
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { trigger: deleteProject } = useRequestMutation("dataWithId", {
+    method: "DELETE",
+    module: "devApi",
+  });
+
+  if (isLoading) {
+    return <div> Loading..</div>;
+  }
+  if (error) {
+    return <div>Error</div>;
+  }
+
+  const handleEditClick = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDelete = async (card: any) => {
+    try {
+      await deleteProject({
+        dynamicValue: card._id,
+      });
+      mutate("todo");
+    } catch (error) {
+      console.error("error", error);
+    }
+  };
+
+  return (
+    <div className="max-w-screen-xl mx-auto p-10">
+      <button
+        onClick={() => router.push("/create")}
+        className="bg-[#684DF4]  text-white p-2 mb-5 rounded-md"
+      >
+        Create new
+      </button>
+      <div className=" bg-[#e3e3e3] justify-center flex gap-5 flex-wrap rounded-md p-5">
+        {data &&
+          data?.data?.map((item: any) => (
+            <div
+              key={item.id}
+              className="bg-white flex justify-center flex-col gap-2 min-w-[300px] max-w-[400px] py-5 px-5 rounded mb-4"
+            >
+              <div className="flex justify-between">
+                <div>Name: {item.name}</div>
+                <div className="flex items-center  gap-2">
+                  Status:{" "}
+                  <p
+                    className={`${CheckStatus(
+                      item.status
+                    )}  text-[10px] p-1 rounded`}
+                  >
+                    {" "}
+                    {item.status}{" "}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p>Surname: {item.surname}</p>
+              </div>
+              <div>
+                <p>Age: {item.age}</p>
+              </div>
+              <div
+                style={{
+                  width: `${item.percent}%`,
+                }}
+                className={` h-2 bg-blue-300 rounded ${CheckStatus(
+                  item.status
+                )}`}
+              ></div>
+              <button
+                onClick={() => handleEditClick(item)}
+                className="bg-blue-500 text-white p-2 rounded-md mt-2"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(item)}
+                className="bg-red-500 p-2 rounded-md text-white"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+      </div>
+
+      {isModalOpen && (
+        <EditModal card={selectedItem} onClose={handleCloseModal} />
+      )}
     </div>
   );
 }
