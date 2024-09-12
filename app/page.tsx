@@ -58,15 +58,15 @@ export default function Home() {
       >
         Create new
       </button>
-      <div className=" bg-[#e3e3e3] justify-center flex gap-5 flex-wrap rounded-md p-5">
+      <div className=" bg-white shadow-2xl justify-center flex gap-5 flex-wrap rounded-md p-5">
         {data &&
           data?.data?.map((item: any) => (
             <div
               key={item.id}
-              className="bg-white flex justify-center flex-col gap-2 min-w-[300px] max-w-[400px] py-5 px-5 rounded mb-4"
+              className="bg-white shadow-2xl rounded-lg  flex justify-center flex-col gap-2 min-w-[300px] max-w-[400px] py-5 px-5  mb-4"
             >
-              <div className="flex justify-between">
-                <div>Name: {item.name}</div>
+              <div className="flex gap-2 justify-between">
+                <div className="font-semibold"> Name: {item.name}</div>
                 <div className="flex items-center  gap-2">
                   Status:{" "}
                   <p
@@ -95,7 +95,7 @@ export default function Home() {
               ></div>
               <button
                 onClick={() => handleEditClick(item)}
-                className="bg-blue-500 text-white p-2 rounded-md mt-2"
+                className="bg-[#684DF4] text-white p-2 rounded-md mt-2"
               >
                 Edit
               </button>
